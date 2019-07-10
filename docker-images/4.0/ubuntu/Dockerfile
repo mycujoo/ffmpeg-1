@@ -21,7 +21,7 @@ ARG        LD_LIBRARY_PATH=/opt/ffmpeg/lib
 ARG        PREFIX=/opt/ffmpeg
 ARG        MAKEFLAGS="-j2"
 
-ENV         FFMPEG_VERSION=4.0.3     \
+ENV         FFMPEG_VERSION=4.0.4     \
             FDKAAC_VERSION=0.1.5      \
             LAME_VERSION=3.100        \
             LIBASS_VERSION=0.13.7     \
@@ -32,6 +32,7 @@ ENV         FFMPEG_VERSION=4.0.3     \
             THEORA_VERSION=1.1.1      \
             VORBIS_VERSION=1.3.5      \
             VPX_VERSION=1.8.0         \
+            WEBP_VERSION=1.0.2        \
             X264_VERSION=20170226-2245-stable \
             X265_VERSION=2.3          \
             XVID_VERSION=1.3.4        \
@@ -168,6 +169,17 @@ RUN \
         tar -zx --strip-components=1 && \
         ./configure --prefix="${PREFIX}" --enable-vp8 --enable-vp9 --enable-vp9-highbitdepth --enable-pic --enable-shared \
         --disable-debug --disable-examples --disable-docs --disable-install-bins  && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+### libwebp https://developers.google.com/speed/webp/
+RUN \
+        DIR=/tmp/vebp && \
+        mkdir -p ${DIR} && \
+        cd ${DIR} && \
+        curl -sL https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${WEBP_VERSION}.tar.gz | \
+        tar -zx --strip-components=1 && \
+        ./configure --prefix="${PREFIX}" --enable-shared  && \
         make && \
         make install && \
         rm -rf ${DIR}
@@ -312,10 +324,6 @@ RUN  \
         curl -sLO https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.bz2 && \
         tar -jx --strip-components=1 -f ffmpeg-${FFMPEG_VERSION}.tar.bz2
 
-RUN \
-        DIR=/tmp/ffmpeg && mkdir -p ${DIR} && cd ${DIR} && \
-	curl -sLO https://github.com/FFmpeg/FFmpeg/commit/b69ea742ab23ad74b2ae2772764743642212a139.patch && \
-	git apply b69ea742ab23ad74b2ae2772764743642212a139.patch
 
 
 RUN \
@@ -338,6 +346,7 @@ RUN \
         --enable-libtheora \
         --enable-libvorbis \
         --enable-libvpx \
+        --enable-libwebp \
         --enable-libx265 \
         --enable-libxvid \
         --enable-libx264 \
